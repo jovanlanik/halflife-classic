@@ -16,7 +16,7 @@ LIMITATION OF LIABILITY.  IN NO EVENT SHALL VALVE OR ITS SUPPLIERS BE LIABLE FOR
 If you would like to use the SDK for a commercial purpose, please contact Valve at sourceengine@valvesoftware.com.
 
 # Half-Life Classic
-This mod ports features from Retail to the Steam version and adds new ones. Also works on Xash3D.
+This mod ports features from Retail to the Steam version and adds new ones.
 ## Features
 1. Weapon Switch
 
@@ -28,6 +28,7 @@ This mod ports features from Retail to the Steam version and adds new ones. Also
 2. View Roll
 
  `cl_rollangle [0-?]`
+ 
  `cl_rollspeed [0-?]`
  
 3. Weapon Bob
