@@ -28,6 +28,7 @@ This mod ports features from Retail to the Steam version and adds new ones. Also
 2. View Roll
 
  `cl_rollangle [0-?]`
+ 
  `cl_rollspeed [0-?]`
  
 3. Weapon Bob
