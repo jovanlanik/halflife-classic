@@ -88,6 +88,7 @@ cvar_t	*v_centerspeed;
 cvar_t	*cl_bobcycle;
 cvar_t	*cl_bob;
 cvar_t	*cl_bobup;
+cvar_t	*cl_bobold;
 cvar_t	*cl_waterdist;
 cvar_t	*cl_chasedist;
 
@@ -222,7 +223,7 @@ float V_CalcRoll (vec3_t angles, vec3_t velocity, float rollangle, float rollspe
     
 	side = DotProduct (velocity, right);
     sign = side < 0 ? -1 : 1;
-    side = fabs_F( side );
+    side = fabs( side );
     
 	value = rollangle;
     if (side < rollspeed)
@@ -298,7 +299,7 @@ void V_DriftPitch ( struct ref_params_s *pparams )
 			// to move the view will be centered automatically if they move more than
 			// v_centermove units. 
 
-			if ( fabs_F( pparams->cmd->forwardmove ) < cl_forwardspeed->value )
+			if ( fabs( pparams->cmd->forwardmove ) < cl_forwardspeed->value )
 				pd.driftmove = 0;
 			else
 				pd.driftmove += pparams->frametime;
@@ -393,7 +394,8 @@ void V_AddIdle ( struct ref_params_s *pparams )
 	pparams->viewangles[YAW] += v_idlescale * sin(pparams->time*v_iyaw_cycle.value) * v_iyaw_level.value;
 }
 
- 
+extern cvar_t *cl_rollspeed;
+extern cvar_t *cl_rollangle;
 /*
 ==============
 V_CalcViewRoll
@@ -403,16 +405,14 @@ Roll is induced by movement and damage
 */
 void V_CalcViewRoll ( struct ref_params_s *pparams )
 {
-	float		side;
 	cl_entity_t *viewentity;
 	
 	viewentity = gEngfuncs.GetEntityByIndex( pparams->viewentity );
 	if ( !viewentity )
 		return;
 
-	side = V_CalcRoll ( viewentity->angles, pparams->simvel, pparams->movevars->rollangle, pparams->movevars->rollspeed );
-
-	pparams->viewangles[ROLL] += side;
+	//Roll the angles when strafing Quake style!
+	pparams->viewangles[ROLL] = V_CalcRoll (pparams->viewangles, pparams->simvel, cl_rollangle->value, cl_rollspeed->value ) * 4;
 
 	if ( pparams->health <= 0 && ( pparams->viewheight[2] != 0 ) )
 	{
@@ -661,6 +661,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	view->angles[YAW]   -= bob * 0.5;
 	view->angles[ROLL]  -= bob * 1;
 	view->angles[PITCH] -= bob * 0.3;
+	if (cl_bobold->value == 1) VectorCopy( view->angles, view->curstate.angles );
 
 	// pushing the view origin down off of the same X/Z plane as the ent's origin will give the
 	// gun a very nice 'shifting' effect when the player looks up/down. If there is a problem
@@ -852,7 +853,7 @@ void V_SmoothInterpolateAngles( float * startAngle, float * endAngle, float * fi
 			d += 360.0f;
 		}
 
-		absd = fabs_F(d);
+		absd = fabs(d);
 
 		if ( absd > 0.01f )
 		{
@@ -1079,7 +1080,7 @@ float MaxAngleBetweenAngles(  float * a1, float * a2 )
 			d += 360;
 		}
 
-		d = fabs_F(d);
+		d = fabs(d);
 
 		if ( d > maxd )
 			maxd=d;
@@ -1714,6 +1715,7 @@ void V_Init (void)
 	cl_bobcycle			= gEngfuncs.pfnRegisterVariable( "cl_bobcycle","0.8", 0 );// best default for my experimental gun wag (sjb)
 	cl_bob				= gEngfuncs.pfnRegisterVariable( "cl_bob","0.01", 0 );// best default for my experimental gun wag (sjb)
 	cl_bobup			= gEngfuncs.pfnRegisterVariable( "cl_bobup","0.5", 0 );
+	cl_bobold			= gEngfuncs.pfnRegisterVariable( "cl_bobold","1", 0 );
 	cl_waterdist		= gEngfuncs.pfnRegisterVariable( "cl_waterdist","4", 0 );
 	cl_chasedist		= gEngfuncs.pfnRegisterVariable( "cl_chasedist","112", 0 );
 }

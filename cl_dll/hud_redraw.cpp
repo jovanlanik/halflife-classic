@@ -224,6 +224,7 @@ int CHud :: Redraw( float flTime, int intermission )
 
 void ScaleColors( int &r, int &g, int &b, int a )
 {
+
 	float x = (float)a / 255;
 	r = (int)(r * x);
 	g = (int)(g * x);

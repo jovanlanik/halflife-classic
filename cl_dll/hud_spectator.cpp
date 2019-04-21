@@ -1212,8 +1212,10 @@ void CHudSpectator::SetModes(int iNewMainMode, int iNewInsetMode)
 			m_crosshairRect.top	 = 0;
 			m_crosshairRect.right	 = 48;
 			m_crosshairRect.bottom = 24;
-						
-			SetCrosshair( m_hCrosshair, m_crosshairRect, 255, 255, 255 );
+			
+			int r, g, b;
+			UnpackRGB(r,g,b, RGB_YELLOWISH);
+			SetCrosshair( m_hCrosshair, m_crosshairRect, r, g, b );
 		}
 		else
 		{
@@ -1872,15 +1874,16 @@ void CHudSpectator::CheckSettings()
 		}
 	}
 
-	// HL/TFC has no oberserver corsshair, so set it client side
+	// HL/TFC has no oberserver crosshair, so set it client side
 	if ( (g_iUser1 == OBS_IN_EYE) || (g_iUser1 == OBS_ROAMING) ) 
 	{
 		m_crosshairRect.left	 = 24;
 		m_crosshairRect.top	 = 0;
 		m_crosshairRect.right	 = 48;
 		m_crosshairRect.bottom = 24;
-					
-		SetCrosshair( m_hCrosshair, m_crosshairRect, 255, 255, 255 );
+		int r, g, b;
+		UnpackRGB(r,g,b, RGB_YELLOWISH);
+		SetCrosshair( m_hCrosshair, m_crosshairRect, r, g, b );
 	}
 	else
 	{

@@ -82,6 +82,14 @@ static CHLVoiceStatusHelper g_VoiceStatusHelper;
 extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes, int iCount);
 
 extern cvar_t *sensitivity;
+cvar_t *hud_color_r;
+cvar_t *hud_color_g;
+cvar_t *hud_color_b;
+cvar_t *hud_bars;
+cvar_t *hud_alpha;
+cvar_t *hud_layout;
+cvar_t *cl_rollspeed;
+cvar_t *cl_rollangle;
 cvar_t *cl_lw = NULL;
 
 void ShutdownInput (void);
@@ -330,7 +338,15 @@ void CHud :: Init( void )
 	default_fov = CVAR_CREATE( "default_fov", "90", 0 );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
+	hud_color_r = CVAR_CREATE( "hud_color_r", "255", FCVAR_ARCHIVE );
+	hud_color_g = CVAR_CREATE( "hud_color_g", "160", FCVAR_ARCHIVE );
+	hud_color_b = CVAR_CREATE( "hud_color_b", "0", FCVAR_ARCHIVE );
+	hud_bars = CVAR_CREATE( "hud_bars", "1", FCVAR_ARCHIVE );
+	hud_alpha = CVAR_CREATE( "hud_alpha", "1", FCVAR_ARCHIVE );
+	hud_layout = CVAR_CREATE( "hud_layout", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
+	cl_rollangle = gEngfuncs.pfnRegisterVariable ( "cl_rollangle", "0.65", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+	cl_rollspeed = gEngfuncs.pfnRegisterVariable ( "cl_rollspeed", "300", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
 
 	m_pSpriteList = NULL;
 

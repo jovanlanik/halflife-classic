@@ -21,7 +21,7 @@
 //
 
 
-#define RGB_YELLOWISH 0x00FFA000 //255,160,0
+#define RGB_YELLOWISH 0x00 + ((int)CVAR_GET_FLOAT("hud_color_r")<<16) | ((int)CVAR_GET_FLOAT("hud_color_g")<<8) | (int)CVAR_GET_FLOAT("hud_color_b")
 #define RGB_REDISH 0x00FF1010 //255,160,0
 #define RGB_GREENISH 0x0000A000 //0,160,0
 

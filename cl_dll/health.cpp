@@ -35,6 +35,7 @@ DECLARE_MESSAGE(m_Health, Damage )
 #define DAMAGE_NAME "sprites/%d_dmg.spr"
 
 int giDmgHeight, giDmgWidth;
+int bata;
 
 int giDmgFlags[NUM_DMG_TYPES] = 
 {
@@ -167,6 +168,9 @@ void CHudHealth::GetPainColor( int &r, int &g, int &b )
 #endif 
 }
 
+extern cvar_t *hud_bars;
+extern cvar_t *hud_alpha;
+extern cvar_t *hud_layout;
 int CHudHealth::Draw(float flTime)
 {
 	int r, g, b;
@@ -180,7 +184,8 @@ int CHudHealth::Draw(float flTime)
 		m_hSprite = LoadSprite(PAIN_NAME);
 	
 	// Has health changed? Flash the health #
-	if (m_fFade)
+	if (hud_alpha->value != 1) a = 255;
+	else if (m_fFade)
 	{
 		m_fFade -= (gHUD.m_flTimeDelta * 20);
 		if (m_fFade <= 0)
@@ -197,10 +202,6 @@ int CHudHealth::Draw(float flTime)
 	else
 		a = MIN_ALPHA;
 
-	// If health is getting low, make it bright red
-	if (m_iHealth <= 15)
-		a = 255;
-		
 	GetPainColor( r, g, b );
 	ScaleColors(r, g, b, a );
 
@@ -209,14 +210,33 @@ int CHudHealth::Draw(float flTime)
 	{
 		HealthWidth = gHUD.GetSpriteRect(gHUD.m_HUD_number_0).right - gHUD.GetSpriteRect(gHUD.m_HUD_number_0).left;
 		int CrossWidth = gHUD.GetSpriteRect(m_HUD_cross).right - gHUD.GetSpriteRect(m_HUD_cross).left;
-
-		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
-		x = CrossWidth /2;
+		if (hud_layout->value == 1)
+		{
+			y = gHUD.m_iFontHeight / 2;
+			x = CrossWidth /2;
+		}
+		else if (hud_layout->value == 2)
+		{
+			y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+			x = ScreenWidth/2 - bata - CrossWidth * 2.5 - HealthWidth;
+		}
+		else if (hud_layout->value == 3)
+		{
+			y = gHUD.m_iFontHeight * 2;
+			x = ScreenWidth - CrossWidth * 1.25;
+		}
+		else
+		{
+			y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+			x = CrossWidth /2;
+		}
 
 		SPR_Set(gHUD.GetSprite(m_HUD_cross), r, g, b);
 		SPR_DrawAdditive(0, x, y, &gHUD.GetSpriteRect(m_HUD_cross));
 
-		x = CrossWidth + HealthWidth / 2;
+		if (hud_layout->value == 2) x = ScreenWidth/2 - bata - CrossWidth * 2.25;
+		else if (hud_layout->value == 3) x = ScreenWidth - CrossWidth * 2 - HealthWidth*2;
+		else x = CrossWidth + HealthWidth / 2;
 
 		x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b);
 
@@ -224,7 +244,12 @@ int CHudHealth::Draw(float flTime)
 
 		int iHeight = gHUD.m_iFontHeight;
 		int iWidth = HealthWidth/10;
-		FillRGBA(x, y, iWidth, iHeight, 255, 160, 0, a);
+		UnpackRGB(r,g,b, RGB_YELLOWISH);
+		if (hud_bars->value == 1)
+		{
+			if (hud_layout->value != 3) FillRGBA(x, y, iWidth, iHeight, r, g, b, a);
+			if (hud_layout->value == 2) FillRGBA(ScreenWidth/2, y, iWidth, iHeight, r, g, b, a);
+		}
 	}
 
 	DrawDamage(flTime);
@@ -271,7 +296,7 @@ void CHudHealth::CalcDamageDirection(vec3_t vecFrom)
 		}
 		else
 		{
-			float f = fabs_F(side);
+			float f = fabs(side);
 			if (f > 0.3)
 				m_fAttackRear = max(m_fAttackRear, f);
 		}
@@ -283,7 +308,7 @@ void CHudHealth::CalcDamageDirection(vec3_t vecFrom)
 		}
 		else
 		{
-			float f = fabs_F(front);
+			float f = fabs(front);
 			if (f > 0.3)
 				m_fAttackLeft = max(m_fAttackLeft, f);
 		}
@@ -374,7 +399,7 @@ int CHudHealth::DrawDamage(float flTime)
 
 	UnpackRGB(r,g,b, RGB_YELLOWISH);
 	
-	a = (int)( fabs_F(sin(flTime*2)) * 256.0);
+	a = (int)( fabs(sin(flTime*2)) * 256.0);
 
 	ScaleColors(r, g, b, a);
 

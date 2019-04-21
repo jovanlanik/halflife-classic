@@ -370,7 +370,7 @@ void CHudAmmo::Think(void)
 		return;
 
 	// has the player selected one?
-	if (gHUD.m_iKeyBits & IN_ATTACK)
+	if (gHUD.m_iKeyBits & IN_ATTACK || CVAR_GET_FLOAT( "hud_fastswitch" ) == 2)
 	{
 		if (gpActiveSel != (WEAPON *)1)
 		{
@@ -434,14 +434,13 @@ void WeaponsResource :: SelectSlot( int iSlot, int fAdvance, int iDirection )
 		return;
 
 	WEAPON *p = NULL;
-	bool fastSwitch = CVAR_GET_FLOAT( "hud_fastswitch" ) != 0;
 
 	if ( (gpActiveSel == NULL) || (gpActiveSel == (WEAPON *)1) || (iSlot != gpActiveSel->iSlot) )
 	{
 		PlaySound( "common/wpn_hudon.wav", 1 );
 		p = GetFirstPos( iSlot );
 
-		if ( p && fastSwitch ) // check for fast weapon switch mode
+		if ( p && CVAR_GET_FLOAT( "hud_fastswitch" ) == 1) // check for fast weapon switch mode
 		{
 			// if fast weapon switch is on, then weapons can be selected in a single keypress
 			// but only if there is only one item in the bucket
@@ -467,12 +466,12 @@ void WeaponsResource :: SelectSlot( int iSlot, int fAdvance, int iDirection )
 	if ( !p )  // no selection found
 	{
 		// just display the weapon list, unless fastswitch is on just ignore it
-		if ( !fastSwitch )
+		if ( CVAR_GET_FLOAT( "hud_fastswitch" ) == 0)
 			gpActiveSel = (WEAPON *)1;
 		else
 			gpActiveSel = NULL;
 	}
-	else 
+	else
 		gpActiveSel = p;
 }
 
@@ -548,7 +547,11 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 	else
 	{
 		if ( m_pWeapon )
-			SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255 );
+		{
+			int r, g, b;
+			UnpackRGB(r,g,b, RGB_YELLOWISH);
+			SetCrosshair( m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, r, g, b );
+		}
 	}
 
 	return 1;
@@ -613,16 +616,32 @@ int CHudAmmo::MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf )
 	if ( gHUD.m_iFOV >= 90 )
 	{ // normal crosshairs
 		if (fOnTarget && m_pWeapon->hAutoaim)
-			SetCrosshair(m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, 255, 255, 255);
+		{
+			int r, g, b;
+			UnpackRGB(r,g,b, RGB_YELLOWISH);
+			SetCrosshair(m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, r, g, b);
+		}
 		else
-			SetCrosshair(m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255);
+		{
+			int r, g, b;
+			UnpackRGB(r,g,b, RGB_YELLOWISH);
+			SetCrosshair(m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, r, g, b);
+		}
 	}
 	else
 	{ // zoomed crosshairs
 		if (fOnTarget && m_pWeapon->hZoomedAutoaim)
-			SetCrosshair(m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 255, 255);
+		{
+			int r, g, b;
+			UnpackRGB(r,g,b, RGB_YELLOWISH);
+			SetCrosshair(m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, r, g, b);
+		}
 		else
-			SetCrosshair(m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 255, 255);
+		{
+			int r, g, b;
+			UnpackRGB(r,g,b, RGB_YELLOWISH);
+			SetCrosshair(m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, r, g, b);
+		}
 
 	}
 
@@ -823,7 +842,9 @@ void CHudAmmo::UserCmd_PrevWeapon(void)
 }
 
 
-
+extern cvar_t *hud_bars;
+extern cvar_t *hud_alpha;
+extern cvar_t *hud_layout;
 //-------------------------------------------------------------------------
 // Drawing code
 //-------------------------------------------------------------------------
@@ -862,7 +883,8 @@ int CHudAmmo::Draw(float flTime)
 
 	AmmoWidth = gHUD.GetSpriteRect(gHUD.m_HUD_number_0).right - gHUD.GetSpriteRect(gHUD.m_HUD_number_0).left;
 
-	a = (int) max( MIN_ALPHA, m_fFade );
+	if (hud_alpha->value == 1) a = (int) max( MIN_ALPHA, m_fFade );
+	else a = 255;
 
 	if (m_fFade > 0)
 		m_fFade -= (gHUD.m_flTimeDelta * 20);
@@ -872,7 +894,14 @@ int CHudAmmo::Draw(float flTime)
 	ScaleColors(r, g, b, a );
 
 	// Does this weapon have a clip?
-	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight/2;
+	if (hud_layout->value == 1)
+	{
+		y = gHUD.m_iFontHeight / 2;
+	}
+	else
+	{
+		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight/2;
+	}
 
 	// Does weapon have any ammo at all?
 	if (m_pWeapon->iAmmoType > 0)
@@ -883,7 +912,14 @@ int CHudAmmo::Draw(float flTime)
 		{
 			// room for the number and the '|' and the current ammo
 			
-			x = ScreenWidth - (8 * AmmoWidth) - iIconWidth;
+			if (hud_layout->value == 2)
+			{
+				x = ScreenWidth/2 + iIconWidth;
+			}
+			else
+			{
+				x = ScreenWidth - (8 * AmmoWidth) - iIconWidth;
+			}
 			x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, pw->iClip, r, g, b);
 
 			wrect_t rc;
@@ -899,7 +935,7 @@ int CHudAmmo::Draw(float flTime)
 			UnpackRGB(r,g,b, RGB_YELLOWISH);
 
 			// draw the | bar
-			FillRGBA(x, y, iBarWidth, gHUD.m_iFontHeight, r, g, b, a);
+			if (hud_bars->value == 1) FillRGBA(x, y, iBarWidth, gHUD.m_iFontHeight, r, g, b, a);
 
 			x += iBarWidth + AmmoWidth/2;;
 
@@ -912,7 +948,14 @@ int CHudAmmo::Draw(float flTime)
 		else
 		{
 			// SPR_Draw a bullets only line
-			x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
+			if (hud_layout->value == 2)
+			{
+				x = ScreenWidth/2 + iIconWidth;
+			}
+			else
+			{
+				x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
+			}
 			x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, gWR.CountAmmo(pw->iAmmoType), r, g, b);
 		}
 
@@ -930,14 +973,30 @@ int CHudAmmo::Draw(float flTime)
 		// Do we have secondary ammo?
 		if ((pw->iAmmo2Type != 0) && (gWR.CountAmmo(pw->iAmmo2Type) > 0))
 		{
-			y -= gHUD.m_iFontHeight + gHUD.m_iFontHeight/4;
-			x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
+			if (hud_layout->value == 1)
+			{
+				y += gHUD.m_iFontHeight + gHUD.m_iFontHeight/4;
+			}
+			else if (hud_layout->value == 2 || hud_layout->value == 3)
+			{
+				y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight/2;
+			}
+			else y -= gHUD.m_iFontHeight + gHUD.m_iFontHeight/4;
+			if (hud_layout->value == 3)
+			{
+				x = AmmoWidth;
+			}
+			else x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
 			x = gHUD.DrawHudNumber(x, y, iFlags|DHN_3DIGITS, gWR.CountAmmo(pw->iAmmo2Type), r, g, b);
 
 			// Draw the ammo Icon
 			SPR_Set(m_pWeapon->hAmmo2, r, g, b);
 			int iOffset = (m_pWeapon->rcAmmo2.bottom - m_pWeapon->rcAmmo2.top)/8;
-			SPR_DrawAdditive(0, x, y - iOffset, &m_pWeapon->rcAmmo2);
+			if (hud_layout->value == 3)
+			{
+				SPR_DrawAdditive(0, x - AmmoWidth * 3, y - iOffset, &m_pWeapon->rcAmmo2);
+			}
+			else SPR_DrawAdditive(0, x, y - iOffset, &m_pWeapon->rcAmmo2);
 		}
 	}
 	return 1;
@@ -1026,8 +1085,22 @@ int CHudAmmo::DrawWList(float flTime)
 	else 
 		iActiveSlot = gpActiveSel->iSlot;
 
-	x = 10; //!!!
-	y = 10; //!!!
+	if (hud_layout->value == 2 || hud_layout->value == 3)
+	{
+		x = ScreenWidth /2 - giBucketWidth * 8;
+	}
+	else
+	{
+		x = 10; //!!!
+	}
+	if (hud_layout->value == 1 || hud_layout->value == 3)
+	{
+		y = ScreenHeight - giBucketHeight*2 + 5;
+	}
+	else
+	{
+		y = 10; //!!!
+	}
 	
 
 	// Ensure that there are available choices in the active slot
@@ -1074,12 +1147,23 @@ int CHudAmmo::DrawWList(float flTime)
 
 
 	a = 128; //!!!
-	x = 10;
+	if (hud_layout->value == 2 || hud_layout->value == 3)
+	{
+		x = ScreenWidth /2 - giBucketWidth * 8;
+	}
+	else
+	{
+		x = 10; //!!!
+	}
 
 	// Draw all of the buckets
 	for (i = 0; i < MAX_WEAPON_SLOTS; i++)
 	{
-		y = giBucketHeight + 10;
+		if (hud_layout->value == 1 || hud_layout->value == 3)
+		{
+			y = ScreenHeight - giBucketHeight*4;
+		}
+		else y = giBucketHeight + 10;
 
 		// If this is the active slot, draw the bigger pictures,
 		// otherwise just draw boxes
@@ -1129,7 +1213,14 @@ int CHudAmmo::DrawWList(float flTime)
 
 				DrawAmmoBar(p, x + giABWidth/2, y, giABWidth, giABHeight);
 				
-				y += p->rcActive.bottom - p->rcActive.top + 5;
+				if (hud_layout->value == 1 || hud_layout->value == 3)
+				{
+					y -= p->rcActive.bottom - p->rcActive.top + 5;
+				}
+				else
+				{
+					y += p->rcActive.bottom - p->rcActive.top + 5;
+				}
 			}
 
 			x += iWidth + 5;
@@ -1138,8 +1229,11 @@ int CHudAmmo::DrawWList(float flTime)
 		else
 		{
 			// Draw Row of weapons.
-
 			UnpackRGB(r,g,b, RGB_YELLOWISH);
+			if (hud_layout->value == 1 || hud_layout->value == 3)
+			{
+				y += giBucketHeight + 6;
+			}
 
 			for ( int iPos = 0; iPos < MAX_WEAPON_POSITIONS; iPos++ )
 			{
@@ -1160,8 +1254,15 @@ int CHudAmmo::DrawWList(float flTime)
 				}
 
 				FillRGBA( x, y, giBucketWidth, giBucketHeight, r, g, b, a );
-
-				y += giBucketHeight + 5;
+				
+				if (hud_layout->value == 1 || hud_layout->value == 3)
+				{
+					y -= giBucketHeight + 5;
+				}
+				else
+				{
+					y += giBucketHeight + 5;
+				}
 			}
 
 			x += giBucketWidth + 5;

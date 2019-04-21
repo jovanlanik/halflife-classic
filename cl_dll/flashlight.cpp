@@ -94,6 +94,7 @@ int CHudFlashlight:: MsgFunc_Flashlight(const char *pszName,  int iSize, void *p
 	return 1;
 }
 
+extern cvar_t *hud_layout;
 int CHudFlashlight::Draw(float flTime)
 {
 	if ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_FLASHLIGHT | HIDEHUD_ALL ) )
@@ -116,9 +117,22 @@ int CHudFlashlight::Draw(float flTime)
 		UnpackRGB(r,g,b, RGB_YELLOWISH);
 
 	ScaleColors(r, g, b, a);
-
-	y = (m_prc1->bottom - m_prc2->top)/2;
-	x = ScreenWidth - m_iWidth - m_iWidth/2 ;
+	if (hud_layout->value == 1 || hud_layout->value == 2)
+	{
+		y = ScreenHeight -(m_prc1->bottom - m_prc2->top) * 1.5;
+	}
+	else
+	{
+		y = (m_prc1->bottom - m_prc2->top)/2;
+	}
+	if (hud_layout->value == 2 || hud_layout->value == 3)
+	{
+		x = m_iWidth /2;
+	}
+	else
+	{
+		x = ScreenWidth - m_iWidth - m_iWidth/2;
+	}
 
 	// Draw the flashlight casing
 	SPR_Set(m_hSprite1, r, g, b );
@@ -126,14 +140,28 @@ int CHudFlashlight::Draw(float flTime)
 
 	if ( m_fOn )
 	{  // draw the flashlight beam
-		x = ScreenWidth - m_iWidth/2;
+		if (hud_layout->value == 2 || hud_layout->value == 3)
+		{
+			x = m_iWidth/2 + m_prc1->right - m_prc1->left;
+		}
+		else
+		{
+			x = ScreenWidth - m_iWidth/2;
+		}
 
 		SPR_Set( m_hBeam, r, g, b );
 		SPR_DrawAdditive( 0, x, y, m_prcBeam );
 	}
 
 	// draw the flashlight energy level
-	x = ScreenWidth - m_iWidth - m_iWidth/2 ;
+	if (hud_layout->value == 2 || hud_layout->value == 3)
+	{
+		x = m_iWidth /2;
+	}
+	else
+	{
+		x = ScreenWidth - m_iWidth - m_iWidth/2;
+	}
 	int iOffset = m_iWidth * (1.0 - m_flBat);
 	if (iOffset < m_iWidth)
 	{

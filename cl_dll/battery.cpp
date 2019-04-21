@@ -48,6 +48,8 @@ int CHudBattery::VidInit(void)
 
 	m_hSprite1 = m_hSprite2 = 0;  // delaying get sprite handles until we know the sprites are loaded
 	m_prc1 = &gHUD.GetSpriteRect( HUD_suit_empty );
+	extern int bata;
+	bata = m_prc1->right + m_prc1->left;
 	m_prc2 = &gHUD.GetSpriteRect( HUD_suit_full );
 	m_iHeight = m_prc2->bottom - m_prc1->top;
 	m_fFade = 0;
@@ -81,7 +83,8 @@ int CHudBattery:: MsgFunc_Battery(const char *pszName,  int iSize, void *pbuf )
 	return 1;
 }
 
-
+extern cvar_t *hud_alpha;
+extern cvar_t *hud_layout;
 int CHudBattery::Draw(float flTime)
 {
 	if ( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH )
@@ -109,7 +112,8 @@ int CHudBattery::Draw(float flTime)
 		return 1;
 
 	// Has health changed? Flash the health #
-	if (m_fFade)
+	if (hud_alpha->value != 1) a = 255;
+	else if (m_fFade)
 	{
 		if (m_fFade > FADE_TIME)
 			m_fFade = FADE_TIME;
@@ -133,8 +137,26 @@ int CHudBattery::Draw(float flTime)
 	
 	int iOffset = (m_prc1->bottom - m_prc1->top)/6;
 
-	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
-	x = ScreenWidth/5;
+	if (hud_layout->value == 1)
+	{
+		y = gHUD.m_iFontHeight / 2;
+		x = ScreenWidth/5;
+	}
+	else if (hud_layout->value == 2)
+	{
+		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+		x = ScreenWidth/2 - m_prc1->right - m_prc1->left;
+	}
+	else if (hud_layout->value == 3)
+	{
+		y = gHUD.m_iFontHeight /2;
+		x = ScreenWidth - (m_prc1->right - m_prc1->left)*1.125;
+	}
+	else
+	{
+		y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+		x = ScreenWidth/5;
+	}
 
 	// make sure we have the right sprite handles
 	if ( !m_hSprite1 )
@@ -150,8 +172,8 @@ int CHudBattery::Draw(float flTime)
 		SPR_Set(m_hSprite2, r, g, b );
 		SPR_DrawAdditive( 0, x, y - iOffset + (rc.top - m_prc2->top), &rc);
 	}
-
-	x += (m_prc1->right - m_prc1->left);
+	if (hud_layout->value == 3) x -= (m_prc1->right - m_prc1->left) * 1.5;
+	else x += m_prc1->right - m_prc1->left;
 	x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b);
 
 	return 1;
