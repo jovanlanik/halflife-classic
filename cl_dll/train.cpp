@@ -45,6 +45,10 @@ int CHudTrain::VidInit(void)
 	return 1;
 };
 
+extern cvar_t *hud_color_r;
+extern cvar_t *hud_color_g;
+extern cvar_t *hud_color_b;
+
 int CHudTrain::Draw(float fTime)
 {
 	if ( !m_hSprite )
@@ -54,7 +58,9 @@ int CHudTrain::Draw(float fTime)
 	{
 		int r, g, b, x, y;
 
-		UnpackRGB(r,g,b, RGB_YELLOWISH);
+		r = (int)hud_color_r->value;
+		g = (int)hud_color_g->value;
+		b = (int)hud_color_b->value;
 		SPR_Set(m_hSprite, r, g, b );
 
 		// This should show up to the right and part way up the armor number

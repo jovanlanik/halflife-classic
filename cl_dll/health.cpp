@@ -138,6 +138,9 @@ int CHudHealth:: MsgFunc_Damage(const char *pszName,  int iSize, void *pbuf )
 	return 1;
 }
 
+extern cvar_t *hud_color_r;
+extern cvar_t *hud_color_g;
+extern cvar_t *hud_color_b;
 
 // Returns back a color from the
 // Green <-> Yellow <-> Red ramp
@@ -156,16 +159,17 @@ void CHudHealth::GetPainColor( int &r, int &g, int &b )
 #else
 	if (m_iHealth > 25)
 	{
-		UnpackRGB(r,g,b, RGB_YELLOWISH);
+		r = (int)hud_color_r->value;
+		g = (int)hud_color_g->value;
+		b = (int)hud_color_b->value;
 	}
 	else
-	{
-		r = 250;
-		g = 0;
-		b = 0;
-	}
+		UnpackRGB(r,g,b, RGB_REDISH);
 #endif 
 }
+
+extern cvar_t *hud_bars;
+extern cvar_t *hud_alpha;
 
 int CHudHealth::Draw(float flTime)
 {
@@ -180,7 +184,8 @@ int CHudHealth::Draw(float flTime)
 		m_hSprite = LoadSprite(PAIN_NAME);
 	
 	// Has health changed? Flash the health #
-	if (m_fFade)
+	if (hud_alpha->value != 1) a = 255;
+	else if (m_fFade)
 	{
 		m_fFade -= (gHUD.m_flTimeDelta * 20);
 		if (m_fFade <= 0)
@@ -225,7 +230,12 @@ int CHudHealth::Draw(float flTime)
 
 		int iHeight = gHUD.m_iFontHeight;
 		int iWidth = HealthWidth/10;
-		FillRGBA(x, y, iWidth, iHeight, 255, 160, 0, a);
+		if (hud_bars->value == 1) {
+			r = (int)hud_color_r->value;
+			g = (int)hud_color_g->value;
+			b = (int)hud_color_b->value;
+			FillRGBA(x, y, iWidth, iHeight, r, g, b, a);
+		}
 	}
 
 	DrawDamage(flTime);
@@ -373,7 +383,9 @@ int CHudHealth::DrawDamage(float flTime)
 	if (!m_bitsDamage)
 		return 1;
 
-	UnpackRGB(r,g,b, RGB_YELLOWISH);
+	r = (int)hud_color_r->value;
+	g = (int)hud_color_g->value;
+	b = (int)hud_color_b->value;
 	
 	a = (int)( fabs(sin(flTime*2)) * 256.0);
 

@@ -83,6 +83,11 @@ extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, i
 
 extern float IN_GetMouseSensitivity();
 
+cvar_t *hud_color_r;
+cvar_t *hud_color_g;
+cvar_t *hud_color_b;
+cvar_t *hud_bars;
+cvar_t *hud_alpha;
 cvar_t *cl_lw = NULL;
 
 void ShutdownInput (void);
@@ -332,6 +337,11 @@ void CHud :: Init( void )
 	default_fov = CVAR_CREATE( "default_fov", "90", FCVAR_ARCHIVE );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
+	hud_bars = CVAR_CREATE( "hud_bars", "1", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+	hud_alpha = CVAR_CREATE( "hud_alpha", "1", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+	hud_color_r = CVAR_CREATE( "hud_color_r", "255", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+	hud_color_g = CVAR_CREATE( "hud_color_g", "160", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
+	hud_color_b = CVAR_CREATE( "hud_color_b", "0", FCVAR_CLIENTDLL|FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 
 	m_pSpriteList = NULL;

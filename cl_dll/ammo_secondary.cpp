@@ -53,6 +53,10 @@ int CHudAmmoSecondary :: VidInit( void )
 	return 1;
 }
 
+extern cvar_t *hud_color_r;
+extern cvar_t *hud_color_g;
+extern cvar_t *hud_color_b;
+
 int CHudAmmoSecondary :: Draw(float flTime)
 {
 	if ( (gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL )) )
@@ -60,7 +64,9 @@ int CHudAmmoSecondary :: Draw(float flTime)
 
 	// draw secondary ammo icons above normal ammo readout
 	int a, x, y, r, g, b, AmmoWidth;
-	UnpackRGB( r, g, b, RGB_YELLOWISH );
+	r = (int)hud_color_r->value;
+	g = (int)hud_color_g->value;
+	b = (int)hud_color_b->value;
 	a = max<int>( MIN_ALPHA, m_fFade );
 	if (m_fFade > 0)
 		m_fFade -= (gHUD.m_flTimeDelta * 20);  // slowly lower alpha to fade out icons

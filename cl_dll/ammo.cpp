@@ -376,7 +376,7 @@ void CHudAmmo::Think(void)
 		return;
 
 	// has the player selected one?
-	if (gHUD.m_iKeyBits & IN_ATTACK)
+	if (gHUD.m_iKeyBits & IN_ATTACK || CVAR_GET_FLOAT( "hud_fastswitch" ) == 2)
 	{
 		if (gpActiveSel != (WEAPON *)1)
 		{
@@ -440,14 +440,14 @@ void WeaponsResource :: SelectSlot( int iSlot, int fAdvance, int iDirection )
 		return;
 
 	WEAPON *p = NULL;
-	bool fastSwitch = CVAR_GET_FLOAT( "hud_fastswitch" ) != 0;
+	bool fastSwitch = CVAR_GET_FLOAT( "hud_fastswitch" );
 
 	if ( (gpActiveSel == NULL) || (gpActiveSel == (WEAPON *)1) || (iSlot != gpActiveSel->iSlot) )
 	{
 		PlaySound( "common/wpn_hudon.wav", 1 );
 		p = GetFirstPos( iSlot );
 
-		if ( p && fastSwitch ) // check for fast weapon switch mode
+		if ( p && fastSwitch == 1 ) // check for fast weapon switch mode
 		{
 			// if fast weapon switch is on, then weapons can be selected in a single keypress
 			// but only if there is only one item in the bucket
@@ -473,7 +473,7 @@ void WeaponsResource :: SelectSlot( int iSlot, int fAdvance, int iDirection )
 	if ( !p )  // no selection found
 	{
 		// just display the weapon list, unless fastswitch is on just ignore it
-		if ( !fastSwitch )
+		if ( fastSwitch == 0 )
 			gpActiveSel = (WEAPON *)1;
 		else
 			gpActiveSel = NULL;
@@ -857,6 +857,12 @@ void CHudAmmo::UserCmd_PrevWeapon(void)
 // Drawing code
 //-------------------------------------------------------------------------
 
+extern cvar_t *hud_bars;
+extern cvar_t *hud_alpha;
+extern cvar_t *hud_color_r;
+extern cvar_t *hud_color_g;
+extern cvar_t *hud_color_b;
+
 int CHudAmmo::Draw(float flTime)
 {
 	int a, x, y, r, g, b;
@@ -891,12 +897,15 @@ int CHudAmmo::Draw(float flTime)
 
 	AmmoWidth = gHUD.GetSpriteRect(gHUD.m_HUD_number_0).right - gHUD.GetSpriteRect(gHUD.m_HUD_number_0).left;
 
-	a = max<int>( MIN_ALPHA, m_fFade );
+	if (hud_alpha->value != 1) a = 255;
+	else a = max<int>( MIN_ALPHA, m_fFade );
 
 	if (m_fFade > 0)
 		m_fFade -= (gHUD.m_flTimeDelta * 20);
 
-	UnpackRGB(r,g,b, RGB_YELLOWISH);
+	r = (int)hud_color_r->value;
+	g = (int)hud_color_g->value;
+	b = (int)hud_color_b->value;
 
 	ScaleColors(r, g, b, a );
 
@@ -925,10 +934,12 @@ int CHudAmmo::Draw(float flTime)
 
 			x += AmmoWidth/2;
 
-			UnpackRGB(r,g,b, RGB_YELLOWISH);
+			r = (int)hud_color_r->value;
+			g = (int)hud_color_g->value;
+			b = (int)hud_color_b->value;
 
 			// draw the | bar
-			FillRGBA(x, y, iBarWidth, gHUD.m_iFontHeight, r, g, b, a);
+			if (hud_bars->value == 1) FillRGBA(x, y, iBarWidth, gHUD.m_iFontHeight, r, g, b, a);
 
 			x += iBarWidth + AmmoWidth/2;;
 
@@ -998,7 +1009,9 @@ int DrawBar(int x, int y, int width, int height, float f)
 		width -= w;
 	}
 
-	UnpackRGB(r, g, b, RGB_YELLOWISH);
+	r = (int)hud_color_r->value;
+	g = (int)hud_color_g->value;
+	b = (int)hud_color_b->value;
 
 	FillRGBA(x, y, width, height, r, g, b, 128);
 
@@ -1074,7 +1087,9 @@ int CHudAmmo::DrawWList(float flTime)
 	{
 		int iWidth;
 
-		UnpackRGB(r,g,b, RGB_YELLOWISH);
+		r = (int)hud_color_r->value;
+		g = (int)hud_color_g->value;
+		b = (int)hud_color_b->value;
 	
 		if ( iActiveSlot == i )
 			a = 255;
@@ -1126,7 +1141,9 @@ int CHudAmmo::DrawWList(float flTime)
 				if ( !p || !p->iId )
 					continue;
 
-				UnpackRGB( r,g,b, RGB_YELLOWISH );
+				r = (int)hud_color_r->value;
+				g = (int)hud_color_g->value;
+				b = (int)hud_color_b->value;
 			
 				// if active, then we must have ammo.
 
@@ -1168,7 +1185,9 @@ int CHudAmmo::DrawWList(float flTime)
 		{
 			// Draw Row of weapons.
 
-			UnpackRGB(r,g,b, RGB_YELLOWISH);
+			r = (int)hud_color_r->value;
+			g = (int)hud_color_g->value;
+			b = (int)hud_color_b->value;
 
 			for ( int iPos = 0; iPos < MAX_WEAPON_POSITIONS; iPos++ )
 			{
@@ -1179,7 +1198,9 @@ int CHudAmmo::DrawWList(float flTime)
 
 				if ( gWR.HasAmmo(p) )
 				{
-					UnpackRGB(r,g,b, RGB_YELLOWISH);
+					r = (int)hud_color_r->value;
+					g = (int)hud_color_g->value;
+					b = (int)hud_color_b->value;
 					a = 128;
 				}
 				else

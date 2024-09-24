@@ -1544,6 +1544,10 @@ void CHudSpectator::DrawOverviewLayer()
 	}
 }
 
+extern cvar_t *hud_color_r;
+extern cvar_t *hud_color_g;
+extern cvar_t *hud_color_b;
+
 void CHudSpectator::DrawOverviewEntities()
 {
 	int				i,ir,ig,ib;
@@ -1557,11 +1561,9 @@ void CHudSpectator::DrawOverviewEntities()
 	
 
 	z = m_OverviewData.layersHeights[0] * zScale;
-	// get yellow/brown HUD color
-	UnpackRGB(ir,ig,ib, RGB_YELLOWISH);
-	r = (float)ir/255.0f;
-	g = (float)ig/255.0f;
-	b = (float)ib/255.0f;
+	r = hud_color_r->value/255.0f;
+	g = hud_color_g->value/255.0f;
+	b = hud_color_b->value/255.0f;
 	
 	gEngfuncs.pTriAPI->CullFace( TRI_NONE );
 

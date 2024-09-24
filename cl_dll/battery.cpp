@@ -81,6 +81,10 @@ int CHudBattery:: MsgFunc_Battery(const char *pszName,  int iSize, void *pbuf )
 	return 1;
 }
 
+extern cvar_t *hud_alpha;
+extern cvar_t *hud_color_r;
+extern cvar_t *hud_color_g;
+extern cvar_t *hud_color_b;
 
 int CHudBattery::Draw(float flTime)
 {
@@ -103,13 +107,16 @@ int CHudBattery::Draw(float flTime)
 	rc.top  += m_iHeight * ((float)(100-(min(100,m_iBat))) * 0.01);	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
 #endif
 
-	UnpackRGB(r,g,b, RGB_YELLOWISH);
+	r = (int)hud_color_r->value;
+	g = (int)hud_color_g->value;
+	b = (int)hud_color_b->value;
 
 	if (!(gHUD.m_iWeaponBits & (1<<(WEAPON_SUIT)) ))
 		return 1;
 
 	// Has health changed? Flash the health #
-	if (m_fFade)
+	if (hud_alpha->value != 1) a = 255;
+	else if (m_fFade)
 	{
 		if (m_fFade > FADE_TIME)
 			m_fFade = FADE_TIME;

@@ -94,6 +94,10 @@ int CHudFlashlight:: MsgFunc_Flashlight(const char *pszName,  int iSize, void *p
 	return 1;
 }
 
+extern cvar_t *hud_color_r;
+extern cvar_t *hud_color_g;
+extern cvar_t *hud_color_b;
+
 int CHudFlashlight::Draw(float flTime)
 {
 	if ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_FLASHLIGHT | HIDEHUD_ALL ) )
@@ -112,8 +116,11 @@ int CHudFlashlight::Draw(float flTime)
 
 	if (m_flBat < 0.20)
 		UnpackRGB(r,g,b, RGB_REDISH);
-	else
-		UnpackRGB(r,g,b, RGB_YELLOWISH);
+	else {
+		r = (int)hud_color_r->value;
+		g = (int)hud_color_g->value;
+		b = (int)hud_color_b->value;
+	}
 
 	ScaleColors(r, g, b, a);
 
